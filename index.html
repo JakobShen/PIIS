@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI 系统架构设计工具</title>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React + ReactDOM from CDN -->
+  <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+
+  <script>
+    const { useState } = React;
+
+    const APP_TYPES = [
+      "Web Application",
+      "Mobile App",
+      "Desktop Software",
+      "Hybrid App (PWA)",
+      "Embedded System",
+      "Other"
+    ];
+    const FEATURES = [
+      "User Authentication / Registration",
+      "Real-time Communication (chat, video, etc.)",
+      "Data Visualization",
+      "File Upload / Storage",
+      "Online Payments",
+      "AI/ML Inference",
+      "Social Features (likes, sharing, comments)",
+      "API Integration",
+      "Offline Support"
+    ];
+    const USER_COUNTS = [
+      "<100",
+      "100–1,000",
+      "1,000–10,000",
+      "10,000–100,000",
+      "100,000+"
+    ];
+
+    function App() {
+      const [prompt, setPrompt] = useState("");
+      const [appType, setAppType] = useState(APP_TYPES[0]);
+      const [features, setFeatures] = useState([]);
+      const [userCount, setUserCount] = useState(USER_COUNTS[0]);
+      const [result, setResult] = useState("");
+      const [loading, setLoading] = useState(false);
+
+      const toggleFeature = (feat) => {
+        setFeatures((prev) =>
+          prev.includes(feat)
+            ? prev.filter((f) => f !== feat)
+            : [...prev, feat]
+        );
+      };
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setResult("");
+        try {
+          const res = await fetch("http://localhost:8000/api/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt, appType, features, userCount })
+          });
+          const data = await res.json();
+          setResult(data.result);
+        } catch (err) {
+          setResult("调用出错: " + err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return React.createElement(
+        "div",
+        { style: { maxWidth: "600px", margin: "2rem auto", fontFamily: "sans-serif" } },
+        React.createElement("h1", null, "AI 系统架构设计工具"),
+        React.createElement(
+          "form",
+          { onSubmit: handleSubmit },
+          // 选择题 1：应用类型
+          React.createElement("label", { htmlFor: "appType" }, "1. 应用类型:"),
+          React.createElement(
+            "select",
+            {
+              id: "appType",
+              value: appType,
+              onChange: (e) => setAppType(e.target.value),
+              style: { width: "100%", padding: "0.5rem", marginBottom: "1rem" }
+            },
+            APP_TYPES.map((opt) =>
+              React.createElement("option", { key: opt, value: opt }, opt)
+            )
+          ),
+          // 选择题 2：核心功能
+          React.createElement("div", null,
+            React.createElement("p", null, "2. 核心功能（多选）:"),
+            FEATURES.map((feat) =>
+              React.createElement("div", { key: feat },
+                React.createElement("label", null,
+                  React.createElement("input", {
+                    type: "checkbox",
+                    checked: features.includes(feat),
+                    onChange: () => toggleFeature(feat)
+                  }),
+                  " " + feat
+                )
+              )
+            )
+          ),
+          // 选择题 3：预期用户量
+          React.createElement("label", { htmlFor: "userCount", style: { marginTop: "1rem", display: "block" } },
+            "3. 预期用户量:"
+          ),
+          React.createElement(
+            "select",
+            {
+              id: "userCount",
+              value: userCount,
+              onChange: (e) => setUserCount(e.target.value),
+              style: { width: "100%", padding: "0.5rem", marginBottom: "1rem" }
+            },
+            USER_COUNTS.map((opt) =>
+              React.createElement("option", { key: opt, value: opt }, opt)
+            )
+          ),
+          // 项目描述
+          React.createElement("textarea", {
+            value: prompt,
+            onChange: (e) => setPrompt(e.target.value),
+            placeholder: "在此输入项目需求（自然语言）…",
+            rows: 4,
+            style: { width: "100%", padding: "0.5rem", marginBottom: "1rem" }
+          }),
+          React.createElement("button", {
+            type: "submit",
+            disabled: loading,
+            style: { padding: "0.5rem 1rem" }
+          }, loading ? "生成中…" : "生成架构方案")
+        ),
+        result &&
+          React.createElement("pre", {
+            style: { marginTop: "1.5rem", background: "#f5f5f5", padding: "1rem", whiteSpace: "pre-wrap" }
+          }, result)
+      );
+    }
+
+    ReactDOM.render(React.createElement(App), document.getElementById("root"));
+  </script>
+</body>
+</html>
