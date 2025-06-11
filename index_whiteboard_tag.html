@@ -51,9 +51,10 @@
       const [extraNotes, setExtraNotes] = useState([]);
 
       const addNote = () => {
-      const newId = Date.now(); // 唯一 ID
-      setExtraNotes([...extraNotes, { id: newId, x: 100, y: 100 }]);
+        const newId = Date.now();
+        setExtraNotes([...extraNotes, { id: newId, x: 100, y: 100, text: "" }]);
       };
+
 
       const toggleFeature = (feat) => {
         setFeatures((prev) =>
@@ -316,7 +317,7 @@ React.createElement(
           }, result),
 
         // 新增便利贴
-        extraNotes.map((note) =>
+                extraNotes.map((note, index) =>
           React.createElement(
             "div",
             {
@@ -337,10 +338,32 @@ React.createElement(
                 boxShadow: "2px 2px 8px rgba(0,0,0,0.15)",
                 cursor: "move",
               },
+              onDoubleClick: (e) => {
+                const editable = e.currentTarget.querySelector(".editable");
+                editable.focus();
+              },
             },
-            "📌 新便利贴内容"
+            React.createElement("div", {
+              className: "editable",
+              contentEditable: true,
+              suppressContentEditableWarning: true,
+              onInput: (e) => {
+                const newText = e.currentTarget.textContent;
+                setExtraNotes((prev) =>
+                  prev.map((n, i) =>
+                    i === index ? { ...n, text: newText } : n
+                  )
+                );
+              },
+              style: {
+                minHeight: "40px",
+                outline: "none",
+              },
+              children: note.text || "📌 双击编辑便利贴内容"
+            })
           )
         )
+
       );
     }
 
