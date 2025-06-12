@@ -150,7 +150,11 @@
 
       const addNote = () => {
         const newId = Date.now();
-        setExtraNotes([...extraNotes, { id: newId, text: "" }]);
+        setExtraNotes([...extraNotes, {
+          id: newId,
+          text: "📌 双击编辑便利贴内容",
+          isPlaceholder: true
+        }]);
         // ✅ 新增到 positions，坐标同 module-1 起始
         setPositions(prev => ({
           ...prev,
@@ -458,23 +462,30 @@
               ),
               /* 然后再渲染原来的可编辑内容… */
             ),
+
             React.createElement("div", {
               className: "editable",
               contentEditable: true,
               suppressContentEditableWarning: true,
-              // ① 用 dangerouslySetInnerHTML 初始化
-              dangerouslySetInnerHTML: {
-                __html: note.text
-                  ? note.text.replace(/\n/g, "<br>")
-                  : "<span style='opacity:.6;'>📌 双击编辑便利贴内容</span>"
+              onBlur: (e) => {
+                const text = e.currentTarget.textContent;
+                setExtraNotes((prevNotes) =>
+                  prevNotes.map((n) =>
+                    n.id === note.id ? {
+                      ...n,
+                      text,
+                      isPlaceholder: text === ""  // Reset placeholder flag if empty
+                    } : n
+                  )
+                );
               },
-              onFocus: e => {
+              onFocus: (e) => {
                 // 第一次聚焦时清除 placeholder
-                if (!note.text) {
+                if (note.isPlaceholder) {
                   e.currentTarget.textContent = "";
                   setExtraNotes(prev =>
                     prev.map(n =>
-                      n.id === note.id ? { ...n, text: "" } : n
+                      n.id === note.id ? { ...n, isPlaceholder: false } : n
                     )
                   );
                 }
@@ -490,8 +501,13 @@
               style: {
                 minHeight: "40px",
                 outline: "none",
+                color: note.isPlaceholder ? 'rgba(0,0,0,0.6)' : '#000'
               },
-              //children: note.text || "📌 双击编辑便利贴内容"
+              ref: (node) => {
+                if (node && note.isPlaceholder && node.textContent === "") {
+                  node.textContent = "📌 双击编辑便利贴内容";
+                }
+              }
             })
           )
         ),
