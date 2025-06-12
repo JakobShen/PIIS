@@ -375,9 +375,13 @@ React.createElement(
               className: "editable", contentEditable: true, 
               suppressContentEditableWarning: true,
               dir: "ltr",
-              onInput: (e) => {
-                const newText = e.currentTarget.textContent;
-                setExtraNotes((prev) => prev.map((n) => n.id === note.id ? { ...n, text: newText } : n));
+              onBlur: (e) => {
+                const text = e.currentTarget.textContent;
+                setExtraNotes((prevNotes) =>
+                  prevNotes.map((n) =>
+                    n.id === note.id ? { ...n, text } : n
+                  )
+                );
               },
               style: {
                 minHeight: "40px",
