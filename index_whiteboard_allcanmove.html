@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>AI 系统架构设计工具</title>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <!-- React + ReactDOM from CDN -->
+  <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+
+  <script>
+    const { useState, useEffect, useRef } = React;
+
+
+    const APP_TYPES = [
+      "Web Application",
+      "Mobile App",
+      "Desktop Software",
+      "Hybrid App (PWA)",
+      "Embedded System",
+      "Other"
+    ];
+    const FEATURES = [
+      "User Authentication / Registration",
+      "Real-time Communication (chat, video, etc.)",
+      "Data Visualization",
+      "File Upload / Storage",
+      "Online Payments",
+      "AI/ML Inference",
+      "Social Features (likes, sharing, comments)",
+      "API Integration",
+      "Offline Support"
+    ];
+    const USER_COUNTS = [
+      "<100",
+      "100–1,000",
+      "1,000–10,000",
+      "10,000–100,000",
+      "100,000+"
+    ];
+
+    function App() {
+      const [prompt, setPrompt] = useState("");
+      const [appType, setAppType] = useState(APP_TYPES[0]);
+      const [features, setFeatures] = useState([]);
+      const [userCount, setUserCount] = useState(USER_COUNTS[0]);
+      const [result, setResult] = useState("");
+      const [loading, setLoading] = useState(false);
+      const [extraNotes, setExtraNotes] = useState([]);
+
+      // —— 新增 拖拽信息 state —— 
+      const [dragInfo, setDragInfo] = useState({
+        id: null, startX: 0, startY: 0, origX: 0, origY: 0
+      });
+
+      //新增：存储三张便利贴位置的 state
+      const [positions, setPositions] = useState({
+        "module-1": { x: 33, y: 125 },
+        "module-2": { x: 33, y: 245 },
+        "module-3": { x: 33, y: 640 }
+
+      });
+
+      // —— 按下：记录起点和原始坐标 —— 
+      const handleMouseDown = (e, id) => {
+        if (!positions[id]) return;
+        e.preventDefault();
+        setDragInfo({
+          id,
+          startX: e.clientX,
+          startY: e.clientY,
+          origX: positions[id].x,
+          origY: positions[id].y
+        });
+      };
+
+      // —— 新增：删除便签 —— 
+      const handleDelete = id => {
+        // 1. 把 extraNotes 里对应项过滤掉
+        setExtraNotes(prev => prev.filter(n => n.id !== id));
+        // 2. 把 positions 里对应位置也删掉
+        setPositions(prev => {
+          const next = { ...prev };
+          delete next[`note-${id}`];
+          return next;
+        });
+      };
+
+
+      // —— 全局监听 移动/松开 —— 
+      useEffect(() => {
+        if (!dragInfo.id) return;
+        const move = e => {
+          const dx = e.clientX - dragInfo.startX;
+          const dy = e.clientY - dragInfo.startY;
+          setPositions(prev => ({
+            ...prev,
+            [dragInfo.id]: {
+              x: dragInfo.origX + dx,
+              y: dragInfo.origY + dy
+            }
+          }));
+        };
+        const up = () => setDragInfo(info => ({ ...info, id: null }));
+        window.addEventListener("mousemove", move);
+        window.addEventListener("mouseup", up);
+        return () => {
+          window.removeEventListener("mousemove", move);
+          window.removeEventListener("mouseup", up);
+        };
+      }, [dragInfo, setPositions]);
+
+
+      // 2️⃣ 新增：拖拽开始时写入 id
+      const handleDragStart = (e, id) => {
+        e.dataTransfer.setData("text/plain", id);
+      };
+
+      // 3️⃣ 新增：放置并更新位置
+      const handleDrop = e => {
+        e.preventDefault();
+        const id = e.dataTransfer.getData("text/plain");
+        if (!positions[id]) return;
+        const rect = e.currentTarget.getBoundingClientRect();
+        setPositions(prev => ({
+          ...prev,
+          [id]: {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+          }
+        }));
+      };
+
+      const handleDragOver = e => {
+        e.preventDefault();
+      };
+
+      const addNote = () => {
+        const newId = Date.now();
+        setExtraNotes([...extraNotes, { id: newId, text: "" }]);
+        // ✅ 新增到 positions，坐标同 module-1 起始
+        setPositions(prev => ({
+          ...prev,
+          [`note-${newId}`]: { x: 100, y: 100 }
+        }));
+      };
+
+
+      const toggleFeature = (feat) => {
+        setFeatures((prev) =>
+          prev.includes(feat)
+            ? prev.filter((f) => f !== feat)
+            : [...prev, feat]
+        );
+      };
+      //mock 一段方便不调用API查看
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setResult("");
+
+        try {
+          // 用 mock 模拟返回内容
+          const mockResponse = {
+            result: `系统架构建议如下：
+        - 使用 React 构建前端
+        - 后端采用 Node.js + Express
+        - 数据存储使用 MongoDB
+        - 采用 JWT 实现用户认证`,
+          };
+
+          await new Promise((resolve) => setTimeout(resolve, 500)); // 模拟延迟
+          setResult(mockResponse.result);
+        } catch (err) {
+          setResult("调用出错：" + err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+      //调用API的在这里
+      /*const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setResult("");
+        try {
+          const res = await fetch("http://localhost:8000/api/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt, appType, features, userCount })
+          });
+          const data = await res.json();
+          setResult(data.result);
+        } catch (err) {
+          setResult("调用出错: " + err.message);
+        } finally {
+          setLoading(false);
+        }
+      }; */
+
+      return React.createElement(
+        "div",
+        {
+          style: {
+            maxWidth: "1400px",
+            margin: "2rem auto",
+            fontFamily: "sans-serif",
+            padding: "2rem",
+            borderRadius: "12px",
+            backgroundImage: "url('whiteboard.png')",
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+            boxShadow: "0 0 20px rgba(0, 0, 0, 0.1)",
+            position: "relative",
+            width: "100%",
+            height: "100%",
+            minHeight: "100vh",
+            overflow: "hidden"
+          },
+
+        },
+        React.createElement(
+          "h1",
+          {
+            style: {
+              position: "absolute",
+              top: "0.01rem",
+              color: "#333"
+            }
+          },
+          "AI system architecture designer"
+        ),
+
+        React.createElement(
+          "button",
+          {
+            onClick: addNote,
+            style: {
+              margin: "1rem",
+              padding: "0.5rem 1rem",
+              fontSize: "1rem",
+              cursor: "pointer",
+              position: "absolute",
+              top: "3.5rem"
+            },
+          },
+          "➕ 添加便利贴"
+        ),
+
+        React.createElement(
+          "form",
+          {
+            onSubmit: handleSubmit,
+            //还是没生效，很奇怪
+            /*
+            onDragOver: (e) => e.preventDefault(),
+            onDrop: (e) => {
+            e.preventDefault();
+            const id = e.dataTransfer.getData("text/plain");
+            const el = document.getElementById(id);
+            if (el) {
+              const containerRect = e.currentTarget.getBoundingClientRect();
+              const newX = e.clientX - containerRect.left;
+              const newY = e.clientY - containerRect.top;
+
+              el.style.left = `${newX}px`;
+              el.style.top = `${newY}px`;
+              }
+            }*/
+          },
+
+          // 选择题 1：应用类型
+          React.createElement("div", {
+            id: "module-1",
+            onMouseDown: e => handleMouseDown(e, "module-1"),
+            style: {
+              background: "#fff78c",  // 类似便利贴的淡黄色
+              width: "200px",
+              padding: "1rem",
+              marginBottom: "1rem",
+              borderRadius: "0",
+              boxShadow: "5px 5px 10px rgba(0, 0, 0, 0.3)",
+              position: "absolute",
+              left: positions["module-1"].x + "px",
+              top: positions["module-1"].y + "px"
+            }
+          },
+            React.createElement("label", { htmlFor: "appType" }, "1. 应用类型:"),
+            React.createElement(
+              "select",
+              {
+                id: "appType",
+                value: appType,
+                onChange: (e) => setAppType(e.target.value),
+                style: { width: "100%", padding: "0.5rem", marginBottom: "1rem" }
+              },
+              APP_TYPES.map((opt) =>
+                React.createElement("option", { key: opt, value: opt }, opt)
+              )
+            )
+          ),
+          // 选择题 2：核心功能
+          React.createElement("div", {
+            id: "module-2",
+            onMouseDown: e => handleMouseDown(e, "module-2"),
+            style: {
+              backgroundColor: "#fff78c",       // 明亮便利贴黄
+              width: "200px",                   // 贴纸尺寸
+              padding: "1rem",
+              marginBottom: "1rem",
+              borderRadius: "0",                // 尖角
+              boxShadow: "5px 5px 10px rgba(0, 0, 0, 0.3)", // 阴影增强立体
+              position: "absolute",
+              left: positions["module-2"].x + "px",
+              top: positions["module-2"].y + "px"
+            }
+          },
+            [
+              React.createElement("p", null, "2. 核心功能（多选）:"),
+              FEATURES.map((feat) =>
+                React.createElement(
+                  "div",
+                  { key: feat },
+                  React.createElement(
+                    "label",
+                    null,
+                    React.createElement("input", {
+                      type: "checkbox",
+                      checked: features.includes(feat),
+                      onChange: () => toggleFeature(feat)
+                    }),
+                    " " + feat
+                  )
+                )
+              )
+            ]
+          ),
+          // 选择题 3：预期用户量
+          React.createElement(
+            "div", {
+            id: "module-3",
+            onMouseDown: e => handleMouseDown(e, "module-3"),
+            style: {
+              backgroundColor: "#fff78c",       // 便利贴黄
+              width: "200px",
+              padding: "1rem",
+              marginBottom: "1rem",
+              borderRadius: "0",
+              boxShadow: "5px 5px 10px rgba(0, 0, 0, 0.3)",
+              position: "absolute",
+              left: positions["module-3"].x + "px",  // 或 "module-3"
+              top: positions["module-3"].y + "px"
+            }
+          },
+            [
+              React.createElement(
+                "label",
+                {
+                  htmlFor: "userCount",
+                  style: { marginBottom: "0.5rem", display: "block" }
+                },
+                "3. 预期用户量:"
+              ),
+              React.createElement(
+                "select",
+                {
+                  id: "userCount",
+                  value: userCount,
+                  onChange: (e) => setUserCount(e.target.value),
+                  style: {
+                    width: "100%",
+                    padding: "0.5rem",
+                    marginTop: "0.5rem"
+                  }
+                },
+                USER_COUNTS.map((opt) =>
+                  React.createElement("option", { key: opt, value: opt }, opt)
+                )
+              )
+            ]
+          ),
+          // 项目描述
+          React.createElement("textarea", {
+            value: prompt,
+            onChange: (e) => setPrompt(e.target.value),
+            placeholder: "在此输入项目需求（自然语言）…",
+            rows: 4,
+            style: { width: "100%", padding: "0.5rem", marginBottom: "1rem", position: "absolute", bottom: "2.5rem" }
+          }),
+          React.createElement("button", {
+            type: "submit",
+            disabled: loading,
+            style: { padding: "0.5rem 1rem", position: "absolute", bottom: "0.5rem" }
+          }, loading ? "生成中…" : "生成架构方案")
+        ),
+        result &&
+        React.createElement("pre", {
+          style: { marginTop: "1.5rem", background: "#f5f5f5", padding: "1rem", whiteSpace: "pre-wrap" }
+        }, result),
+
+        // 新增便利贴
+        extraNotes.map((note, index) =>
+          React.createElement(
+            "div",
+            {
+              key: note.id,
+              id: `note-${note.id}`,
+              onMouseDown: e => handleMouseDown(e, `note-${note.id}`),
+              style: {
+                position: "absolute",
+                left: `${positions[`note-${note.id}`].x}px`,
+                top: `${positions[`note-${note.id}`].y}px`,
+                background: "#fff78c",
+                padding: "1rem",
+                borderRadius: "0",
+                width: "180px",
+                boxShadow: "2px 2px 8px rgba(0,0,0,0.15)",
+                cursor: "move",
+              },
+              onDoubleClick: (e) => {
+                const editable = e.currentTarget.querySelector(".editable");
+                editable.focus();
+              },
+            },
+            React.createElement("div", { /* …同上props… */ },
+              // —— 第1个子节点：删除按钮 —— 
+              React.createElement(
+                "span",
+                {
+                  style: {
+                    position: "absolute",
+                    top: "4px",
+                    right: "6px",
+                    cursor: "pointer",
+                    fontWeight: "bold",
+                    fontSize: "16px",
+                    lineHeight: "1"
+                  },
+                  onClick: e => {
+                    e.stopPropagation();      // 防止触发拖拽
+                    handleDelete(note.id);    // 调用我们新建的删除函数
+                  }
+                },
+                "×"
+              ),
+              /* 然后再渲染原来的可编辑内容… */
+            ),
+            React.createElement("div", {
+              className: "editable",
+              contentEditable: true,
+              suppressContentEditableWarning: true,
+              // ① 用 dangerouslySetInnerHTML 初始化
+              dangerouslySetInnerHTML: {
+                __html: note.text
+                  ? note.text.replace(/\n/g, "<br>")
+                  : "<span style='opacity:.6;'>📌 双击编辑便利贴内容</span>"
+              },
+              onFocus: e => {
+                // 第一次聚焦时清除 placeholder
+                if (!note.text) {
+                  e.currentTarget.textContent = "";
+                  setExtraNotes(prev =>
+                    prev.map(n =>
+                      n.id === note.id ? { ...n, text: "" } : n
+                    )
+                  );
+                }
+              },
+              onInput: (e) => {
+                const newText = e.currentTarget.textContent;
+                setExtraNotes((prev) =>
+                  prev.map((n, i) =>
+                    i === index ? { ...n, text: newText } : n
+                  )
+                );
+              },
+              style: {
+                minHeight: "40px",
+                outline: "none",
+              },
+              //children: note.text || "📌 双击编辑便利贴内容"
+            })
+          )
+        )
+
+      );
+    }
+
+    ReactDOM.render(React.createElement(App), document.getElementById("root"));
+  </script>
+</body>
+
+</html>
