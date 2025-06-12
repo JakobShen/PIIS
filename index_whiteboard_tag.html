@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>AI 系统架构设计工具</title>
 </head>
+
 <body>
   <div id="root"></div>
 
@@ -50,39 +52,39 @@
       const [loading, setLoading] = useState(false);
       const [extraNotes, setExtraNotes] = useState([]);
       const [trashNotes, setTrashNotes] = useState([]);
-      
+
       const addNote = () => {
-  const id = "note-" + Date.now();
-  setExtraNotes((prev) => [
-    ...prev,
-    {
-      id,
-      x: 200,
-      y: 200,
-      text: "",
-      render: () =>
-        React.createElement("div", {
-          contentEditable: true,
-          suppressContentEditableWarning: true,
-          dir: "ltr",
-          onBlur: (e) => {
-            const text = e.currentTarget.textContent;
-            setExtraNotes((prevNotes) =>
-              prevNotes.map((n) =>
-                n.id === id ? { ...n, text } : n
-              )
-            );
-          },
-          style: {
-            minHeight: "40px",
-            outline: "none",
-            wordBreak: "break-word"
-          },
-          children: "📌 双击编辑便利贴内容"
-        })
-    }
-  ]);
-};
+        const id = "note-" + Date.now();
+        setExtraNotes((prev) => [
+          ...prev,
+          {
+            id,
+            x: 200,
+            y: 200,
+            text: "",
+            render: () =>
+              React.createElement("div", {
+                contentEditable: true,
+                suppressContentEditableWarning: true,
+                dir: "ltr",
+                onBlur: (e) => {
+                  const text = e.currentTarget.textContent;
+                  setExtraNotes((prevNotes) =>
+                    prevNotes.map((n) =>
+                      n.id === id ? { ...n, text } : n
+                    )
+                  );
+                },
+                style: {
+                  minHeight: "40px",
+                  outline: "none",
+                  wordBreak: "break-word"
+                },
+                children: "📌 双击编辑便利贴内容"
+              })
+          }
+        ]);
+      };
 
 
       const deleteNote = (id) => {
@@ -115,23 +117,23 @@
         setResult("");
 
         try {
-        // 用 mock 模拟返回内容
-        const mockResponse = {
-        result: `系统架构建议如下：
+          // 用 mock 模拟返回内容
+          const mockResponse = {
+            result: `系统架构建议如下：
         - 使用 React 构建前端
         - 后端采用 Node.js + Express
         - 数据存储使用 MongoDB
         - 采用 JWT 实现用户认证`,
-    };
+          };
 
-        await new Promise((resolve) => setTimeout(resolve, 500)); // 模拟延迟
-        setResult(mockResponse.result);
-      } catch (err) {
-        setResult("调用出错：" + err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+          await new Promise((resolve) => setTimeout(resolve, 500)); // 模拟延迟
+          setResult(mockResponse.result);
+        } catch (err) {
+          setResult("调用出错：" + err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
       //调用API的在这里
       /*const handleSubmit = async (e) => {
         e.preventDefault();
@@ -155,22 +157,23 @@
       return React.createElement(
         "div",
         {
-          style: { maxWidth: "1400px",
-          margin: "2rem auto",
-          fontFamily: "sans-serif",
-          padding: "2rem",
-          borderRadius: "12px",
-          backgroundImage: "url('whiteboard.png')",
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "center",
-          boxShadow: "0 0 20px rgba(0, 0, 0, 0.1)",
-          position: "relative",
-          width: "100%",
-          height: "100%",
-          minHeight: "100vh",
-          overflow: "hidden"
-          } ,
+          style: {
+            maxWidth: "1400px",
+            margin: "2rem auto",
+            fontFamily: "sans-serif",
+            padding: "2rem",
+            borderRadius: "12px",
+            backgroundImage: "url('whiteboard.png')",
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+            boxShadow: "0 0 20px rgba(0, 0, 0, 0.1)",
+            position: "relative",
+            width: "100%",
+            height: "100%",
+            minHeight: "100vh",
+            overflow: "hidden"
+          },
 
 
           //拖拽移动位置逻辑，不知道为什么没生效
@@ -194,18 +197,18 @@
         },
         React.createElement("h1", null, "AI system architecture designer"),
         React.createElement(
-  "button",
-  {
-    onClick: addNote,
-    style: {
-      margin: "1rem",
-      padding: "0.5rem 1rem",
-      fontSize: "1rem",
-      cursor: "pointer",
-    },
-  },
-  "➕ 添加便利贴"
-),
+          "button",
+          {
+            onClick: addNote,
+            style: {
+              margin: "1rem",
+              padding: "0.5rem 1rem",
+              fontSize: "1rem",
+              cursor: "pointer",
+            },
+          },
+          "➕ 添加便利贴"
+        ),
 
         React.createElement(
           "form",
@@ -230,34 +233,34 @@
           },
 
           // 选择题 1：应用类型
-          React.createElement("div",{
+          React.createElement("div", {
             id: "module-1",
             draggable: true,
             onDragStart: (e) => {
-            e.dataTransfer.setData("text/plain", e.target.id);
+              e.dataTransfer.setData("text/plain", e.target.id);
             },
-            style:{
-            background: "#fff78c",  // 类似便利贴的淡黄色
-            width: "200px",
-            padding: "1rem",
-            marginBottom: "1rem",
-            borderRadius: "0",
-            boxShadow: "5px 5px 10px rgba(0, 0, 0, 0.3)",
-            position: "relative"
+            style: {
+              background: "#fff78c",  // 类似便利贴的淡黄色
+              width: "200px",
+              padding: "1rem",
+              marginBottom: "1rem",
+              borderRadius: "0",
+              boxShadow: "5px 5px 10px rgba(0, 0, 0, 0.3)",
+              position: "relative"
             }
-                  },
-          React.createElement("label", { htmlFor: "appType" }, "1. 应用类型:"),
-          React.createElement(
-            "select",
-            {
-              id: "appType",
-              value: appType,
-              onChange: (e) => setAppType(e.target.value),
-              style: { width: "100%", padding: "0.5rem", marginBottom: "1rem" }
-            },
-            APP_TYPES.map((opt) =>
-              React.createElement("option", { key: opt, value: opt }, opt)
-            )
+          },
+            React.createElement("label", { htmlFor: "appType" }, "1. 应用类型:"),
+            React.createElement(
+              "select",
+              {
+                id: "appType",
+                value: appType,
+                onChange: (e) => setAppType(e.target.value),
+                style: { width: "100%", padding: "0.5rem", marginBottom: "1rem" }
+              },
+              APP_TYPES.map((opt) =>
+                React.createElement("option", { key: opt, value: opt }, opt)
+              )
             )
           ),
           // 选择题 2：核心功能
@@ -265,83 +268,83 @@
             id: "module-2",
             draggable: true,
             onDragStart: (e) => {
-            e.dataTransfer.setData("text/plain", e.target.id);
+              e.dataTransfer.setData("text/plain", e.target.id);
             },
             style: {
-            backgroundColor: "#fff78c",       // 明亮便利贴黄
-            width: "200px",                   // 贴纸尺寸
-            padding: "1rem",
-            marginBottom: "1rem",
-            borderRadius: "0",                // 尖角
-            boxShadow: "5px 5px 10px rgba(0, 0, 0, 0.3)", // 阴影增强立体
-            position: "relative"
-              }
-                  },
-  [
-    React.createElement("p", null, "2. 核心功能（多选）:"),
-    FEATURES.map((feat) =>
-      React.createElement(
-        "div",
-        { key: feat },
-        React.createElement(
-          "label",
-          null,
-          React.createElement("input", {
-            type: "checkbox",
-            checked: features.includes(feat),
-            onChange: () => toggleFeature(feat)
-          }),
-          " " + feat
-        )
-      )
-    )
-  ]
-),
+              backgroundColor: "#fff78c",       // 明亮便利贴黄
+              width: "200px",                   // 贴纸尺寸
+              padding: "1rem",
+              marginBottom: "1rem",
+              borderRadius: "0",                // 尖角
+              boxShadow: "5px 5px 10px rgba(0, 0, 0, 0.3)", // 阴影增强立体
+              position: "relative"
+            }
+          },
+            [
+              React.createElement("p", null, "2. 核心功能（多选）:"),
+              FEATURES.map((feat) =>
+                React.createElement(
+                  "div",
+                  { key: feat },
+                  React.createElement(
+                    "label",
+                    null,
+                    React.createElement("input", {
+                      type: "checkbox",
+                      checked: features.includes(feat),
+                      onChange: () => toggleFeature(feat)
+                    }),
+                    " " + feat
+                  )
+                )
+              )
+            ]
+          ),
           // 选择题 3：预期用户量
-React.createElement(
-  "div", {
-    id: "module-3",
+          React.createElement(
+            "div", {
+            id: "module-3",
             draggable: true,
             onDragStart: (e) => {
-            e.dataTransfer.setData("text/plain", e.target.id);
+              e.dataTransfer.setData("text/plain", e.target.id);
             },
-    style: {
-      backgroundColor: "#fff78c",       // 便利贴黄
-      width: "200px",
-      padding: "1rem",
-      marginBottom: "1rem",
-      borderRadius: "0",
-      boxShadow: "5px 5px 10px rgba(0, 0, 0, 0.3)",
-      position: "relative"
-    }
-  },
-  [
-    React.createElement(
-      "label",
-      {
-        htmlFor: "userCount",
-        style: { marginBottom: "0.5rem", display: "block" }
-      },
-      "3. 预期用户量:"
-    ),
-    React.createElement(
-      "select",
-      {
-        id: "userCount",
-        value: userCount,
-        onChange: (e) => setUserCount(e.target.value),
-        style: {
-          width: "100%",
-          padding: "0.5rem",
-          marginTop: "0.5rem"
-        }
-      },
-      USER_COUNTS.map((opt) =>
-        React.createElement("option", { key: opt, value: opt }, opt)
-      )
-    )
-  ]
-),
+            style: {
+              backgroundColor: "#fff78c",       // 便利贴黄
+              width: "200px",
+              padding: "1rem",
+              marginBottom: "1rem",
+              borderRadius: "0",
+              boxShadow: "5px 5px 10px rgba(0, 0, 0, 0.3)",
+              position: "relative"
+            }
+          },
+            [
+              React.createElement(
+                "label",
+                {
+                  htmlFor: "userCount",
+                  style: { marginBottom: "0.5rem", display: "block" }
+                },
+                "3. 预期用户量:"
+              ),
+              React.createElement(
+                "select",
+                {
+                  id: "userCount",
+                  value: userCount,
+                  onChange: (e) => setUserCount(e.target.value),
+                  style: {
+                    width: "100%",
+                    padding: "0.5rem",
+                    marginTop: "0.5rem"
+                  }
+                },
+                USER_COUNTS.map((opt) =>
+                  React.createElement("option", { key: opt, value: opt }, opt)
+                )
+              )
+            ]
+          ),
           // 项目描述
           React.createElement("textarea", {
             value: prompt,
@@ -357,12 +360,12 @@ React.createElement(
           }, loading ? "生成中…" : "生成架构方案")
         ),
         result &&
-          React.createElement("pre", {
-            style: { marginTop: "1.5rem", background: "#f5f5f5", padding: "1rem", whiteSpace: "pre-wrap" }
-          }, result),
+        React.createElement("pre", {
+          style: { marginTop: "1.5rem", background: "#f5f5f5", padding: "1rem", whiteSpace: "pre-wrap" }
+        }, result),
 
         // 新增便利贴
-          extraNotes.map((note) => React.createElement("div", {
+        extraNotes.map((note) => React.createElement("div", {
           key: note.id, id: `note-${note.id}`, draggable: true,
           onDragStart: (e) => e.dataTransfer.setData("text/plain", `note-${note.id}`),
           style: {
@@ -372,7 +375,7 @@ React.createElement(
           },
           children: [
             React.createElement("div", {
-              className: "editable", contentEditable: true, 
+              className: "editable", contentEditable: true,
               suppressContentEditableWarning: true,
               dir: "ltr",
               onBlur: (e) => {
@@ -412,4 +415,5 @@ React.createElement(
     ReactDOM.render(React.createElement(App), document.getElementById("root"));
   </script>
 </body>
+
 </html>
