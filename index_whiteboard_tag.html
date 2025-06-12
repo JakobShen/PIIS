@@ -49,12 +49,28 @@
       const [result, setResult] = useState("");
       const [loading, setLoading] = useState(false);
       const [extraNotes, setExtraNotes] = useState([]);
-
+      const [trashNotes, setTrashNotes] = useState([]);
+      
       const addNote = () => {
         const newId = Date.now();
         setExtraNotes([...extraNotes, { id: newId, x: 100, y: 100, text: "" }]);
       };
 
+      const deleteNote = (id) => {
+        const noteToDelete = extraNotes.find((note) => note.id === id);
+        if (noteToDelete) {
+          setExtraNotes((prev) => prev.filter((note) => note.id !== id));
+          setTrashNotes((prev) => [...prev, noteToDelete]);
+        }
+      };
+
+      const restoreNote = (id) => {
+        const noteToRestore = trashNotes.find((note) => note.id === id);
+        if (noteToRestore) {
+          setTrashNotes((prev) => prev.filter((note) => note.id !== id));
+          setExtraNotes((prev) => [...prev, noteToRestore]);
+        }
+      };
 
       const toggleFeature = (feat) => {
         setFeatures((prev) =>
@@ -317,50 +333,39 @@ React.createElement(
           }, result),
 
         // 新增便利贴
-                extraNotes.map((note, index) =>
-          React.createElement(
-            "div",
-            {
-              key: note.id,
-              id: `note-${note.id}`,
-              draggable: true,
-              onDragStart: (e) => {
-                e.dataTransfer.setData("text/plain", `note-${note.id}`);
-              },
-              style: {
-                position: "absolute",
-                left: `${note.x}px`,
-                top: `${note.y}px`,
-                background: "#fff78c",
-                padding: "1rem",
-                borderRadius: "0",
-                width: "180px",
-                boxShadow: "2px 2px 8px rgba(0,0,0,0.15)",
-                cursor: "move",
-              },
-              onDoubleClick: (e) => {
-                const editable = e.currentTarget.querySelector(".editable");
-                editable.focus();
-              },
-            },
+          extraNotes.map((note) => React.createElement("div", {
+          key: note.id, id: `note-${note.id}`, draggable: true,
+          onDragStart: (e) => e.dataTransfer.setData("text/plain", `note-${note.id}`),
+          style: {
+            position: "absolute", left: `${note.x}px`, top: `${note.y}px`, background: "#fff78c",
+            padding: "1rem", borderRadius: "0", width: "180px",
+            boxShadow: "2px 2px 8px rgba(0,0,0,0.15)", cursor: "move"
+          },
+          children: [
             React.createElement("div", {
-              className: "editable",
-              contentEditable: true,
-              suppressContentEditableWarning: true,
+              className: "editable", contentEditable: true, suppressContentEditableWarning: true,
               onInput: (e) => {
                 const newText = e.currentTarget.textContent;
-                setExtraNotes((prev) =>
-                  prev.map((n, i) =>
-                    i === index ? { ...n, text: newText } : n
-                  )
-                );
+                setExtraNotes((prev) => prev.map((n) => n.id === note.id ? { ...n, text: newText } : n));
               },
-              style: {
-                minHeight: "40px",
-                outline: "none",
-              },
+              style: { minHeight: "40px", outline: "none" },
               children: note.text || "📌 双击编辑便利贴内容"
-            })
+            }),
+            React.createElement("button", {
+              onClick: () => deleteNote(note.id),
+              style: { marginTop: "0.5rem", background: "#ff4d4f", color: "white", border: "none", padding: "4px 8px", cursor: "pointer" }
+            }, "删除")
+          ]
+        })),
+
+        React.createElement("div", {
+          style: {
+            position: "fixed", right: "20px", bottom: "20px", background: "#444", color: "white",
+            padding: "0.5rem 1rem", borderRadius: "8px", zIndex: 1000, cursor: "pointer"
+          },
+          onClick: () => alert(trashNotes.map(n => n.text || "(空内容)").join("\n---\n") || "回收站为空")
+        }, "🗑️ 回收站 (", trashNotes.length, ")")
+            
           )
         )
 
