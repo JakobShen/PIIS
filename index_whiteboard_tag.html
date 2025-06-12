@@ -52,9 +52,38 @@
       const [trashNotes, setTrashNotes] = useState([]);
       
       const addNote = () => {
-        const newId = Date.now();
-        setExtraNotes([...extraNotes, { id: newId, x: 100, y: 100, text: "" }]);
-      };
+  const id = "note-" + Date.now();
+  setExtraNotes((prev) => [
+    ...prev,
+    {
+      id,
+      x: 200,
+      y: 200,
+      text: "",
+      render: () =>
+        React.createElement("div", {
+          contentEditable: true,
+          suppressContentEditableWarning: true,
+          dir: "ltr",
+          onBlur: (e) => {
+            const text = e.currentTarget.textContent;
+            setExtraNotes((prevNotes) =>
+              prevNotes.map((n) =>
+                n.id === id ? { ...n, text } : n
+              )
+            );
+          },
+          style: {
+            minHeight: "40px",
+            outline: "none",
+            wordBreak: "break-word"
+          },
+          children: "📌 双击编辑便利贴内容"
+        })
+    }
+  ]);
+};
+
 
       const deleteNote = (id) => {
         const noteToDelete = extraNotes.find((note) => note.id === id);
@@ -343,12 +372,18 @@ React.createElement(
           },
           children: [
             React.createElement("div", {
-              className: "editable", contentEditable: true, suppressContentEditableWarning: true,
+              className: "editable", contentEditable: true, 
+              suppressContentEditableWarning: true,
+              dir: "ltr",
               onInput: (e) => {
                 const newText = e.currentTarget.textContent;
                 setExtraNotes((prev) => prev.map((n) => n.id === note.id ? { ...n, text: newText } : n));
               },
-              style: { minHeight: "40px", outline: "none" },
+              style: {
+                minHeight: "40px",
+                outline: "none",
+                wordBreak: "break-word"
+              },
               children: note.text || "📌 双击编辑便利贴内容"
             }),
             React.createElement("button", {
