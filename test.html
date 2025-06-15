@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI System Architecture Designer | Online Tetris</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+      color: #333;
+      min-height: 100vh;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    .app-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #ff8c00, #ff0080, #00c9ff);
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      background: linear-gradient(90deg, #1a2a6c, #b21f1f);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      color: #555;
+      max-width: 800px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .main-content {
+      display: flex;
+      gap: 20px;
+      min-height: 80vh;
+    }
+
+    .controls-section {
+      flex: 0 0 350px;
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .whiteboard-section {
+      flex: 1;
+      background-image: url('https://www.transparenttextures.com/patterns/notebook.png');
+      background-color: #f0f5e1;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      min-height: 800px;
+      position: relative;
+      overflow: auto;
+      padding: 20px;
+    }
+
+    .control-group {
+      background: rgba(255, 247, 140, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .control-title {
+      font-size: 1.4rem;
+      margin-bottom: 15px;
+      color: #1a2a6c;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .control-title i {
+      color: #ff6b6b;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #444;
+    }
+
+    select, textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: rgba(255, 255, 255, 0.9);
+      font-size: 1rem;
+      margin-bottom: 15px;
+      transition: all 0.3s;
+    }
+
+    select:focus, textarea:focus {
+      outline: none;
+      border-color: #5d9bff;
+      box-shadow: 0 0 0 3px rgba(93, 155, 255, 0.2);
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feature-item input {
+      width: 18px;
+      height: 18px;
+    }
+
+    button {
+      background: linear-gradient(135deg, #1a2a6c, #3a7bd5);
+      color: white;
+      border: none;
+      padding: 14px 25px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      box-shadow: 0 4px 15px rgba(26, 42, 108, 0.3);
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 7px 20px rgba(26, 42, 108, 0.4);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .add-note-btn {
+      background: linear-gradient(135deg, #ff8c00, #ff5200);
+      margin-top: 10px;
+    }
+
+    .note {
+      position: absolute;
+      background: #fff78c;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
+      width: 250px;
+      min-height: 150px;
+      cursor: move;
+      transition: box-shadow 0.3s;
+      z-index: 10;
+      max-height: 300px;
+      overflow: hidden;
+    }
+
+    .note:hover {
+      box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .note-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed rgba(0, 0, 0, 0.2);
+    }
+
+    .note-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #1a2a6c;
+      cursor: pointer;
+      padding: 2px 5px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .note-title:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .note-title:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 0 2px rgba(93, 155, 255, 0.5);
+    }
+
+    .note-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .note-action {
+      background: rgba(0, 0, 0, 0.05);
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .note-action:hover {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .note-content {
+      line-height: 1.5;
+      font-size: 0.95rem;
+      max-height: 200px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    .note-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .note-content::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 3px;
+    }
+
+    .note-content::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+    }
+
+    .result-note {
+      background: #d0f0c0;
+      width: 400px;
+      min-height: 300px;
+      max-height: 400px;
+      z-index: 20;
+    }
+
+    .result-note .note-content {
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+    }
+
+    .trash-bin {
+      position: fixed;
+      right: 30px;
+      bottom: 30px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      z-index: 100;
+      transition: all 0.3s;
+    }
+
+    .trash-bin:hover {
+      transform: scale(1.1);
+      background: rgba(255, 100, 100, 0.9);
+    }
+
+    .trash-count {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #ff6b6b;
+      color: white;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      border-radius: 15px;
+      backdrop-filter: blur(3px);
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 5px solid rgba(26, 42, 108, 0.2);
+      border-top: 5px solid #1a2a6c;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .grid-lines {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image:
+        linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
+      pointer-events: none;
+    }
+
+    footer {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.7);
+      padding: 20px;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 1100px) {
+      .main-content {
+        flex-direction: column;
+      }
+
+      .controls-section {
+        flex: 1;
+      }
+    }
+
+    .title-edit-tooltip {
+      position: absolute;
+      top: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      display: none;
+    }
+
+    .note-header:hover .title-edit-tooltip {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <h1>AI System Architecture Designer</h1>
+      <p class="subtitle">Design the architecture for your software with AI-powered recommendations</p>
+    </header>
+
+    <div class="main-content">
+      <div class="controls-section">
+        <div class="control-group">
+          <h2 class="control-title"><i class="fas fa-cube"></i> Application Details</h2>
+
+          <label for="appType">Application Type:</label>
+          <select id="appType">
+            <option>Web Application</option>
+            <option selected>Mobile App</option>
+            <option>Desktop Software</option>
+            <option>Hybrid App (PWA)</option>
+          </select>
+
+          <label for="userCount">Expected User Scale:</label>
+          <select id="userCount">
+            <option>&lt;100 users</option>
+            <option>100–1,000 users</option>
+            <option selected>1,000–10,000 users</option>
+            <option>10,000–100,000 users</option>
+            <option>100,000+ users</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <h2 class="control-title"><i class="fas fa-star"></i> Core Features</h2>
+          <div class="features-grid">
+            <div class="feature-item">
+              <input type="checkbox" id="feature1" checked>
+              <label for="feature1">Multiplayer Mode</label>
+            </div>
+            <div class="feature-item">
+              <input type="checkbox" id="feature2" checked>
+              <label for="feature2">Real-time Gameplay</label>
+            </div>
+            <div class="feature-item">
+              <input type="checkbox" id="feature3" checked>
+              <label for="feature3">Leaderboards</label>
+            </div>
+            <div class="feature-item">
+              <input type="checkbox" id="feature4">
+              <label for="feature4">In-game Chat</label>
+            </div>
+            <div class="feature-item">
+              <input type="checkbox" id="feature5" checked>
+              <label for="feature5">User Profiles</label>
+            </div>
+            <div class="feature-item">
+              <input type="checkbox" id="feature6">
+              <label for="feature6">Tournaments</label>
+            </div>
+            <div class="feature-item">
+              <input type="checkbox" id="feature7" checked>
+              <label for="feature7">Spectator Mode</label>
+            </div>
+            <div class="feature-item">
+              <input type="checkbox" id="feature8" checked>
+              <label for="feature8">Cross-platform</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h2 class="control-title"><i class="fas fa-file-alt"></i> Project Description</h2>
+          <textarea id="projectDesc">We are building a multiplayer online Tetris game that allows players to compete in real-time. The game should support 1v1 and 2v2 modes, global leaderboards, and user profiles. Players should be able to spectate ongoing games. The system must handle 5,000+ concurrent users with low latency gameplay.</textarea>
+        </div>
+
+        <button id="generateBtn">
+          <i class="fas fa-brain"></i> Generate Architecture
+        </button>
+
+        <button class="add-note-btn" id="addNoteBtn">
+          <i class="fas fa-plus"></i> Add Sticky Note
+        </button>
+      </div>
+
+      <div class="whiteboard-section" id="whiteboard">
+        <div class="grid-lines"></div>
+
+        <!-- Pre-added notes about the project -->
+        <div class="note" style="top: 120px; left: 150px;">
+          <div class="note-header">
+            <div>
+              <div class="title-edit-tooltip">Double-click to edit title</div>
+              <div class="note-title" tabindex="0">Game Concept</div>
+            </div>
+            <div class="note-actions">
+              <div class="note-action"><i class="fas fa-times"></i></div>
+            </div>
+          </div>
+          <div class="note-content">
+            Multiplayer Tetris with:
+            - Real-time 1v1 and 2v2 battles
+            - Global leaderboards
+            - Spectator mode
+            - Customizable themes
+            - Cross-platform play
+            - Skill-based matchmaking
+          </div>
+        </div>
+
+        <div class="note" style="top: 120px; left: 450px;">
+          <div class="note-header">
+            <div>
+              <div class="title-edit-tooltip">Double-click to edit title</div>
+              <div class="note-title" tabindex="0">Technical Requirements</div>
+            </div>
+            <div class="note-actions">
+              <div class="note-action"><i class="fas fa-times"></i></div>
+            </div>
+          </div>
+          <div class="note-content">
+            - Low latency gameplay (&lt;100ms)
+            - Support 5,000+ concurrent users
+            - Real-time multiplayer synchronization
+            - Account system with stats tracking
+            - Anti-cheat mechanisms
+            - Scalable infrastructure
+            - Cross-platform support (Web, iOS, Android)
+          </div>
+        </div>
+
+        <div class="note" style="top: 120px; left: 750px;">
+          <div class="note-header">
+            <div>
+              <div class="title-edit-tooltip">Double-click to edit title</div>
+              <div class="note-title" tabindex="0">Target Audience</div>
+            </div>
+            <div class="note-actions">
+              <div class="note-action"><i class="fas fa-times"></i></div>
+            </div>
+          </div>
+          <div class="note-content">
+            - Casual gamers (25-45 age group)
+            - Competitive puzzle players
+            - Esports enthusiasts
+            - Nostalgia players (original Tetris fans)
+            - Social gamers
+            - Cross-platform users
+
+            Monetization:
+            - Cosmetic items
+            - Battle pass
+            - Tournament entry fees
+            - Ad-supported free tier
+          </div>
+        </div>
+
+        <div class="note result-note" style="top: 350px; left: 300px; display: none;" id="resultNote">
+          <div class="note-header">
+            <div>
+              <div class="title-edit-tooltip">Double-click to edit title</div>
+              <div class="note-title" tabindex="0">AI Architecture Proposal</div>
+            </div>
+            <div class="note-actions">
+              <div class="note-action"><i class="fas fa-times"></i></div>
+            </div>
+          </div>
+          <div class="note-content">
+            <strong>Multiplayer Tetris System Architecture</strong>
+
+            <u>Frontend:</u>
+            - React.js with TypeScript for web
+            - React Native for mobile apps
+            - Unity for desktop clients
+            - Redux for state management
+            - WebSockets for real-time communication
+
+            <u>Backend Services:</u>
+            - Node.js with Express.js
+            - Game Server: Dedicated servers for game sessions
+            - Matchmaking Service: Skill-based player matching
+            - User Service: Account management and profiles
+            - Leaderboard Service: Real-time ranking updates
+            - Notification Service: Game invites and updates
+
+            <u>Real-time Communication:</u>
+            - WebSocket for game state synchronization
+            - Redis for pub/sub and caching
+            - Protocol Buffers for efficient data serialization
+
+            <u>Database:</u>
+            - PostgreSQL for relational data (users, matches)
+            - MongoDB for unstructured data (game logs, events)
+            - Redis for leaderboards and caching
+
+            <u>Game Logic:</u>
+            - Deterministic simulation for consistent gameplay
+            - Client-side prediction for smooth experience
+            - Server reconciliation for fairness
+
+            <u>Infrastructure:</u>
+            - AWS EKS for Kubernetes orchestration
+            - AWS GameLift for dedicated game servers
+            - AWS RDS for PostgreSQL
+            - AWS ElastiCache for Redis
+            - CloudFront CDN for static assets
+
+            <u>Monitoring & Analytics:</u>
+            - Prometheus & Grafana for metrics
+            - ELK stack for logging
+            - New Relic for APM
+            - Custom analytics for gameplay metrics
+
+            <u>Scalability Strategy:</u>
+            - Auto-scaling game server instances
+            - Regional deployment for low latency
+            - Database read replicas for high read throughput
+            - Redis Cluster for distributed caching
+            - Load balancers with session affinity
+
+            <u>Security:</u>
+            - JWT authentication
+            - DDoS protection with AWS Shield
+            - Anti-cheat detection system
+            - Regular security audits
+
+            <u>Deployment:</u>
+            - CI/CD pipeline with GitHub Actions
+            - Blue-green deployments
+            - Canary releases for new features
+            - Infrastructure as Code with Terraform
+
+            Estimated Costs:
+            - Development: $150,000
+            - Monthly Infrastructure: $8,000 (at 5k concurrent users)
+            - Time to Market: 6 months
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="trash-bin" id="trashBin">
+      <i class="fas fa-trash-alt"></i>
+      <div class="trash-count">0</div>
+    </div>
+
+    <footer>
+      <p>AI System Architecture Designer &copy; 2025 | Create, visualize and optimize your system designs</p>
+    </footer>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const whiteboard = document.getElementById('whiteboard');
+      const addNoteBtn = document.getElementById('addNoteBtn');
+      const generateBtn = document.getElementById('generateBtn');
+      const trashBin = document.getElementById('trashBin');
+      const resultNote = document.getElementById('resultNote');
+      const trashCount = document.querySelector('.trash-count');
+      let noteCount = 3;
+      let deletedNotes = 0;
+      let isDragging = false;
+      let currentNote = null;
+      let offsetX, offsetY;
+
+      // Add new sticky note
+      addNoteBtn.addEventListener('click', function() {
+        noteCount++;
+        const x = 100 + (Math.random() * 200);
+        const y = 100 + (Math.random() * 200);
+
+        const note = document.createElement('div');
+        note.className = 'note';
+        note.style.top = `${y}px`;
+        note.style.left = `${x}px`;
+        note.innerHTML = `
+          <div class="note-header">
+            <div>
+              <div class="title-edit-tooltip">Double-click to edit title</div>
+              <div class="note-title" tabindex="0">Note #${noteCount}</div>
+            </div>
+            <div class="note-actions">
+              <div class="note-action"><i class="fas fa-times"></i></div>
+            </div>
+          </div>
+          <div class="note-content" contenteditable="true">
+            Double-click to edit this note...
+          </div>
+        `;
+
+        whiteboard.appendChild(note);
+        addNoteEvents(note);
+      });
+
+      // Generate architecture button
+      generateBtn.addEventListener('click', function() {
+        // Show loading overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'loading-overlay';
+        overlay.innerHTML = '<div class="spinner"></div>';
+        whiteboard.appendChild(overlay);
+
+        // Simulate AI processing time
+        setTimeout(() => {
+          whiteboard.removeChild(overlay);
+          resultNote.style.display = 'block';
+
+          // Scroll to the result note
+          resultNote.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+          // Add drag functionality to the result note
+          addNoteEvents(resultNote);
+        }, 2000);
+      });
+
+      // Add events to existing notes
+      document.querySelectorAll('.note').forEach(note => {
+        addNoteEvents(note);
+      });
+
+      // Add event listeners to a note
+      function addNoteEvents(note) {
+        // Delete button
+        const deleteBtn = note.querySelector('.note-action');
+        deleteBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          note.style.transform = 'scale(0.9)';
+          note.style.opacity = '0.5';
+
+          setTimeout(() => {
+            whiteboard.removeChild(note);
+            deletedNotes++;
+            trashCount.textContent = deletedNotes;
+          }, 300);
+        });
+
+        // Title editing functionality
+        const title = note.querySelector('.note-title');
+        title.addEventListener('dblclick', function(e) {
+          e.stopPropagation();
+          this.contentEditable = true;
+          this.focus();
+
+          // Select all text for easier editing
+          const range = document.createRange();
+          range.selectNodeContents(this);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+        });
+
+        title.addEventListener('blur', function() {
+          this.contentEditable = false;
+
+          // If title is empty, restore default
+          if (this.textContent.trim() === '') {
+            this.textContent = this.dataset.original || 'Untitled Note';
+          }
+        });
+
+        // Save original title on first interaction
+        if (!title.dataset.original) {
+          title.dataset.original = title.textContent;
+        }
+
+        // Press Enter to finish editing
+        title.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            this.blur();
+          }
+        });
+
+        // Drag functionality
+        const header = note.querySelector('.note-header');
+        header.style.cursor = 'move';
+
+        header.addEventListener('mousedown', startDrag);
+
+        // Make content editable on double click
+        const content = note.querySelector('.note-content');
+        content.addEventListener('dblclick', function() {
+          this.contentEditable = true;
+          this.focus();
+        });
+
+        content.addEventListener('blur', function() {
+          this.contentEditable = false;
+        });
+      }
+
+      // Drag functionality
+      function startDrag(e) {
+        // Don't start drag if we're clicking on the delete button or editing title
+        if (e.target.classList.contains('note-action') ||
+            e.target.classList.contains('note-title') && e.target.isContentEditable) {
+          return;
+        }
+
+        isDragging = true;
+        currentNote = this.parentElement;
+        offsetX = e.clientX - currentNote.getBoundingClientRect().left;
+        offsetY = e.clientY - currentNote.getBoundingClientRect().top;
+
+        currentNote.style.zIndex = '100';
+        document.addEventListener('mousemove', dragNote);
+        document.addEventListener('mouseup', stopDrag);
+      }
+
+      function dragNote(e) {
+        if (!isDragging) return;
+
+        const whiteboardRect = whiteboard.getBoundingClientRect();
+        const x = e.clientX - offsetX - whiteboardRect.left;
+        const y = e.clientY - offsetY - whiteboardRect.top;
+
+        // Boundary checks
+        const maxX = whiteboardRect.width - currentNote.offsetWidth;
+        const maxY = whiteboardRect.height - currentNote.offsetHeight;
+
+        currentNote.style.left = `${Math.max(0, Math.min(x, maxX))}px`;
+        currentNote.style.top = `${Math.max(0, Math.min(y, maxY))}px`;
+      }
+
+      function stopDrag() {
+        isDragging = false;
+        if (currentNote) {
+          currentNote.style.zIndex = '10';
+          currentNote = null;
+        }
+        document.removeEventListener('mousemove', dragNote);
+        document.removeEventListener('mouseup', stopDrag);
+      }
+
+      // Trash bin functionality
+      trashBin.addEventListener('click', function() {
+        if (deletedNotes === 0) {
+          alert('Trash bin is empty');
+          return;
+        }
+
+        alert(`Trash bin contains ${deletedNotes} deleted notes.`);
+      });
+    });
+  </script>
+</body>
+</html>
