@@ -91,14 +91,22 @@ async def generate_diagram(req: RequestBody):
 async def note_hint(data: dict = Body(...)):
     existing_notes = data.get("existingNotes", "")
     title = data.get("title", "New Note")
+    content = data.get("content", "")
 
     full_prompt = (
         f"You are helping a user design a software architecture using sticky notes.\n"
         f"The user has already written the following notes:\n\n"
         f"{existing_notes}\n\n"
-        f"Now they added a new note titled: {title}\n"
-        f"Please suggest content for this note that complements the existing ones."
+        f"Now they added a new note titled: {title}.\n"
     )
+
+    if content:
+        full_prompt += (
+            f"The note already contains the following text:\n{content}\n"
+            f"Please provide a suggestion to continue or complete this note so it complements the others."
+        )
+    else:
+        full_prompt += "Please suggest content for this note that complements the existing ones."
 
     response = gemini_model.generate_content(full_prompt)
     return {"suggestion": response.text.strip()}

@@ -16,6 +16,7 @@
                   <div class="note-title" tabindex="0">Note #${noteCount}</div>
                 </div>
                 <div class="note-actions">
+                  <div class="note-action suggest-action" title="AI Suggest"><i class="fas fa-magic"></i></div>
                   <div class="note-action"><i class="fas fa-times"></i></div>
                 </div>
               </div>
@@ -36,7 +37,9 @@
     // 便签事件绑定函数
     function addNoteEvents(note) {
         // 删除按钮事件和拖拽删除
-        const deleteBtn = note.querySelector('.note-action');
+        const deleteBtn = note.querySelector('.note-action:not(.suggest-action)');
+        const suggestBtn = note.querySelector('.suggest-action');
+        const title = note.querySelector('.note-title');
         // 删除按钮点击删除
         deleteBtn.addEventListener('click', function (e) {
             e.stopPropagation();
@@ -85,8 +88,53 @@
             currentNote = null;
         });
 
+        // AI Suggest button
+        if (suggestBtn) {
+            suggestBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const titleText = title.textContent.trim() || 'New Note';
+                const contentDiv = note.querySelector('.note-content');
+                const existingContent = contentDiv.innerText.trim();
+                const existingNotes = Array.from(document.querySelectorAll('.note'))
+                    .filter(n => n !== note)
+                    .map(el => el.innerText.trim())
+                    .filter(text => text.length > 0)
+                    .join('\n\n');
+
+                const original = contentDiv.innerText;
+                contentDiv.innerText = '(Generating suggestion from AI...)';
+
+                const overlay = document.createElement('div');
+                overlay.className = 'loading-overlay';
+                overlay.innerHTML = '<div class="spinner"></div>';
+                whiteboard.appendChild(overlay);
+
+                fetch('http://127.0.0.1:8000/api/note_hint', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ existingNotes, title: titleText, content: existingContent })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (existingContent) {
+                            contentDiv.innerText = existingContent + '\n' + data.suggestion;
+                        } else {
+                            contentDiv.innerText = data.suggestion;
+                        }
+                    })
+                    .catch(err => {
+                        console.error('AI suggestion failed', err);
+                        contentDiv.innerText = original;
+                    })
+                    .finally(() => {
+                        if (whiteboard.contains(overlay)) {
+                            whiteboard.removeChild(overlay);
+                        }
+                    });
+            });
+        }
+
         // 标题双击编辑
-        const title = note.querySelector('.note-title');
         title.addEventListener('dblclick', function (e) {
             e.stopPropagation();
             this.contentEditable = true;
@@ -141,14 +189,24 @@
                 .filter(text => text.length > 0)
                 .join("\n\n");
 
-            fetch("/api/note_hint", {
+            const overlay = document.createElement('div');
+            overlay.className = 'loading-overlay';
+            overlay.innerHTML = '<div class="spinner"></div>';
+            whiteboard.appendChild(overlay);
+
+            fetch("http://127.0.0.1:8000/api/note_hint", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ existingNotes, title })
+                body: JSON.stringify({ existingNotes, title: title.textContent.trim(), content: "" })
             })
                 .then(res => res.json())
                 .then(data => {
                     content.innerText = data.suggestion;
+                })
+                .finally(() => {
+                    if (whiteboard.contains(overlay)) {
+                        whiteboard.removeChild(overlay);
+                    }
                 });
         }
     }
