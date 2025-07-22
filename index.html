@@ -118,6 +118,25 @@ We are building a multiplayer online Tetris game that allows players to compete 
           <button class="add-note-btn" id="addNoteBtn">
             <i class="fas fa-plus"></i> Add Sticky Note
           </button>
+          <!-- MCQ Question Generator -->
+          <div class="control-group">
+            <h2 class="control-title">
+              <i class="fas fa-question-circle"></i> Assessment
+            </h2>
+            <select id="questionCategory">
+              <option>Project Basics</option>
+              <option>User Behavior &amp; Connectivity</option>
+              <option>Data &amp; Storage</option>
+              <option>Performance &amp; Scalability</option>
+              <option>Security &amp; Access Control</option>
+              <option>Deployment &amp; DevOps</option>
+              <option>Observability &amp; Reliability</option>
+              <option>Cost &amp; Business Model</option>
+            </select>
+            <button id="generateMCQBtn">
+              <i class="fas fa-question"></i> Generate MCQ
+            </button>
+          </div>
         </div>
 
         <!-- Collaboration Panel -->
@@ -386,6 +405,7 @@ We are building a multiplayer online Tetris game that allows players to compete 
     <script src="js/favorites.js"></script>
     <script src="js/architecture.js"></script>
     <script src="js/diagram.js"></script>
+    <script src="js/questions.js"></script>
     <script src="js/collaboration.js"></script>
     <script src="js/main.js"></script>
   </body>

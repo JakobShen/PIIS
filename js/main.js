@@ -1,20 +1,22 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // ³õÊ¼»¯±ãÇ©Âß¼­
+    // åˆå§‹åŒ–MCQ
+    if (window.initQuestions) window.initQuestions();
+    // åˆå§‹åŒ–ä¾¿ç­¾é€»è¾‘
     if (window.initNotes) window.initNotes();
 
-    // ³õÊ¼»¯À¬»øÍ°
+    // åˆå§‹åŒ–åƒåœ¾æ¡¶
     if (window.initTrashBin) window.initTrashBin();
 
-    // ³õÊ¼»¯ÊÕ²Ø¼Ğ
+    // åˆå§‹åŒ–æ”¶è—å¤¹
     if (window.initFavorites) window.initFavorites();
 
-    // ³õÊ¼»¯¼Ü¹¹Éú³É
+    // åˆå§‹åŒ–æ¶æ„ç”Ÿæˆ
     if (window.initArchitecture) window.initArchitecture();
 
-    // ³õÊ¼»¯Á÷³ÌÍ¼Éú³É
+    // åˆå§‹åŒ–æµç¨‹å›¾ç”Ÿæˆ
     if (window.initDiagram) window.initDiagram();
 
-    // ³õÊ¼»¯ Mermaid
+    // åˆå§‹åŒ– Mermaid
     if (window.mermaid) {
         window.mermaid.initialize({
             startOnLoad: false,

@@ -16,6 +16,9 @@ class RequestBody(BaseModel):
     userCount: str
     notes: List[str]
 
+class MCQRequest(RequestBody):
+    category: str
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -98,6 +101,20 @@ async def generate_diagram(req: RequestBody):
         }
     except Exception as e:
         return {"error": str(e)}
+
+@app.post("/api/generate_mcq")
+async def generate_mcq(req: MCQRequest):
+    base_prompt = (
+        f"应用类型: {req.appType}\n"
+        f"核心功能: {', '.join(req.features) or '无'}\n"
+        f"预期用户量: {req.userCount}\n"
+        f"用户输入标签: {chr(10).join(req.notes) or '无'}\n"
+        f"项目描述: {req.prompt}\n"
+        f"问题分类: {req.category}"
+    )
+    user_msg = "基于以上信息，生成一个四选一的选择题。请只给出问题和A、B、C、D四个答案。"
+    response = gemini_model.generate_content(base_prompt + "\n" + user_msg)
+    return {"mcq": response.text.strip()}
 
 @app.post("/api/note_hint")
 async def note_hint(data: dict = Body(...)):

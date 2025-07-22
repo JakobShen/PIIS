@@ -1,4 +1,6 @@
-// DOM Ԫ��
+window.generateMcqBtn = document.getElementById("generateMCQBtn");
+window.questionCategory = document.getElementById("questionCategory");
+// DOM ÔªËØ
 window.whiteboard = document.getElementById('whiteboard');
 window.addNoteBtn = document.getElementById('addNoteBtn');
 window.generateBtn = document.getElementById('generateBtn');
@@ -12,7 +14,7 @@ window.docCount = docBin.querySelector('.doc-count');
 window.docList = docBin.querySelector('.doc-list');
 window.bins = document.getElementById('bins');
 
-// ״̬����
+// ×´Ì¬±äÁ¿
 window.noteCount = 3;
 window.deletedNotes = 0;
 window.savedNotesArr = [];

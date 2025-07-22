@@ -16,6 +16,9 @@ class RequestBody(BaseModel):
     userCount: str
     notes: List[str]
 
+class MCQRequest(RequestBody):
+    category: str
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -118,6 +121,29 @@ async def generate_diagram(req: RequestBody):
         }
     except Exception as e:
         return {"error": str(e)}
+
+@app.post("/api/generate_mcq")
+async def generate_mcq(req: MCQRequest):
+    prompt = (
+        f"应用类型: {req.appType}\n"
+        f"核心功能: {', '.join(req.features) or '无'}\n"
+        f"预期用户量: {req.userCount}\n"
+        f"用户输入标签: {chr(10).join(req.notes) or '无'}\n"
+        f"项目描述: {req.prompt}\n"
+        f"问题分类: {req.category}"
+    )
+    user_msg = (
+        "基于以上信息，生成一个四选一的选择题。"
+        "请提供简短的问题以及A、B、C、D四个答案，不要附加任何额外内容。"
+    )
+    response = await client.chat.completions.create(
+        model="deepseek-chat",
+        messages=[
+            {"role": "system", "content": "你是经验丰富的软件顾问，擅长提出关键问题。"},
+            {"role": "user", "content": prompt + "\n" + user_msg}
+        ]
+    )
+    return {"mcq": response.choices[0].message.content.strip()}
 
 @app.post("/api/note_hint")
 async def note_hint(data: dict = Body(...)):
