@@ -133,8 +133,9 @@ async def generate_mcq(req: MCQRequest):
         f"问题分类: {req.category}"
     )
     user_msg = (
-        "基于以上信息，生成一个四选一的选择题。"
-        "请提供简短的问题以及A、B、C、D四个答案，不要附加任何额外内容。"
+        "Using the above information, identify a project aspect that is missing "
+        "or unclear. Ask one short multiple-choice question in English to clar"
+        "ify it and provide options A, B, C and D only without any extra text."
     )
     response = await client.chat.completions.create(
         model="deepseek-chat",

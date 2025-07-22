@@ -112,7 +112,10 @@ async def generate_mcq(req: MCQRequest):
         f"项目描述: {req.prompt}\n"
         f"问题分类: {req.category}"
     )
-    user_msg = "基于以上信息，生成一个四选一的选择题。请只给出问题和A、B、C、D四个答案。"
+    user_msg = (
+        "Using the above information, identify a project aspect that is missing or unclear. "
+        "Ask one short multiple-choice question in English to clarify it and provide options A, B, C and D only."
+    )
     response = gemini_model.generate_content(base_prompt + "\n" + user_msg)
     return {"mcq": response.text.strip()}
 

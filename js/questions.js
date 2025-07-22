@@ -40,6 +40,7 @@ function initQuestions() {
             note.className = 'note result-note';
             note.style.top = '200px';
             note.style.left = '200px';
+            const optionName = 'mcq-' + Date.now();
             note.innerHTML = `
                 <div class="note-header">
                     <div>
@@ -50,7 +51,15 @@ function initQuestions() {
                         <div class="note-action"><i class="fas fa-times"></i></div>
                     </div>
                 </div>
-                <div class="note-content">${data.mcq || ''}</div>
+                <div class="note-content">
+                    <pre>${data.mcq || ''}</pre>
+                    <div class="mcq-options">
+                        <label><input type="radio" name="${optionName}" value="A">A</label>
+                        <label><input type="radio" name="${optionName}" value="B">B</label>
+                        <label><input type="radio" name="${optionName}" value="C">C</label>
+                        <label><input type="radio" name="${optionName}" value="D">D</label>
+                    </div>
+                </div>
             `;
             whiteboard.appendChild(note);
             addNoteEvents(note);

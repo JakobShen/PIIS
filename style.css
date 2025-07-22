@@ -788,6 +788,23 @@ button {
     padding-right: 5px;
     display: flex;
     flex-direction: column;
+    gap: 8px;
+}
+
+.note-content pre {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.mcq-options {
+    display: flex;
+    gap: 10px;
+}
+
+.mcq-options label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
     .note-content::-webkit-scrollbar {
