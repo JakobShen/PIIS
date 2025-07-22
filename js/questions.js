@@ -40,6 +40,15 @@ function initQuestions() {
             note.className = 'note result-note';
             note.style.top = '200px';
             note.style.left = '200px';
+
+            const parsed = parseMCQ(data.mcq || '');
+            const radioName = 'mcq-' + Date.now();
+            let optionsHtml = '';
+            parsed.options.forEach((opt, idx) => {
+                const letter = String.fromCharCode(65 + idx);
+                optionsHtml += `<label class="mcq-option"><input type="radio" name="${radioName}" value="${letter}"> ${opt}</label><br>`;
+            });
+
             note.innerHTML = `
                 <div class="note-header">
                     <div>
@@ -50,7 +59,10 @@ function initQuestions() {
                         <div class="note-action"><i class="fas fa-times"></i></div>
                     </div>
                 </div>
-                <div class="note-content">${data.mcq || ''}</div>
+                <div class="note-content">
+                    <div class="mcq-question">${parsed.question}</div>
+                    <div class="mcq-options">${optionsHtml}</div>
+                </div>
             `;
             whiteboard.appendChild(note);
             addNoteEvents(note);
@@ -61,6 +73,22 @@ function initQuestions() {
             console.error('generateMCQ failed:', err);
         }
     });
+}
+
+function parseMCQ(text) {
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+    const question = lines[0] || text;
+    let options = lines.slice(1).map(l => l.replace(/^[A-D][).:\s]*\s*/, ''));
+    if (options.length < 4) {
+        options = [];
+        const regex = /[A-D][).:\s]*([^\n]+)/g;
+        let m;
+        while ((m = regex.exec(text)) && options.length < 4) {
+            options.push(m[1].trim());
+        }
+    }
+    while (options.length < 4) options.push('');
+    return { question, options };
 }
 
 window.initQuestions = initQuestions;

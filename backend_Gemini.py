@@ -35,12 +35,12 @@ gemini_model = genai.GenerativeModel("gemini-2.5-flash")  # or "gemini-1.5-flash
 async def generate(req: RequestBody):
     # Construct the prompt
     full_prompt = (
-        f"你是一个帮助用户生成软件系统架构设计方案的助手。请用英文回答。\n"
-        f"应用类型: {req.appType}\n"
-        f"核心功能: {', '.join(req.features) or '无'}\n"
-        f"预期用户量: {req.userCount}\n"
-        f"用户输入标签: {chr(10).join(req.notes) or '无'}\n"
-        f"项目描述: {req.prompt}"
+        f"You are an assistant that helps users design software system architectures. Answer in English.\n"
+        f"Application type: {req.appType}\n"
+        f"Core features: {', '.join(req.features) or 'None'}\n"
+        f"Expected user count: {req.userCount}\n"
+        f"User input notes: {chr(10).join(req.notes) or 'None'}\n"
+        f"Project description: {req.prompt}"
     )
     
     # Generate content with Gemini
@@ -50,15 +50,15 @@ async def generate(req: RequestBody):
 @app.post('/generate_diagram')
 async def generate_diagram(req: RequestBody):
     """
-    基于上一步的架构生成结果，自动生成对应的流程图
+    Automatically generate a diagram based on the previously generated architecture.
     """
     # First generate architecture description
     full_prompt = (
-        f"你是一个帮助用户生成软件系统架构设计方案的助手。请用英文回答。\n"
-        f"应用类型: {req.appType}\n"
-        f"核心功能: {', '.join(req.features) or '无'}\n"
-        f"预期用户量: {req.userCount}\n"
-        f"项目描述: {req.prompt}"
+        f"You are an assistant that helps users design software system architectures. Answer in English.\n"
+        f"Application type: {req.appType}\n"
+        f"Core features: {', '.join(req.features) or 'None'}\n"
+        f"Expected user count: {req.userCount}\n"
+        f"Project description: {req.prompt}"
     )
     
     architecture_response = gemini_model.generate_content(full_prompt)
@@ -66,10 +66,10 @@ async def generate_diagram(req: RequestBody):
     
     # Then convert to Mermaid diagram
     diagram_prompt = f"""
-    你是一个软件架构专家，请将以下系统架构描述转化为 mermaid.js 的流程图（graph TD 格式），
-    只返回代码块，请不要返回```mermaid以及```，不需要任何解释。生成的代码箭头指向不能太凌乱。
-    代码必须能在 Mermaid Live Editor 正确渲染。然后[]中的单词必须打""，即["Mobile"]，不要直接写成[Mobile]
-    示例：
+    You are a software architecture expert. Convert the following architecture description into a mermaid.js flowchart (graph TD format).
+    Return only the code block without ```mermaid``` or ``` and provide no explanation. The arrows in the diagram should be reasonably clear.
+    The code must render correctly in the Mermaid Live Editor. Put words in brackets in quotes, e.g., ["Mobile"], not [Mobile]
+    Example:
     graph TD
         A["Mobile App (iOS Android)"] --> B["API Gateway (Load Balancer)"]
         B --> C["Matchmaking Service"]
@@ -81,7 +81,7 @@ async def generate_diagram(req: RequestBody):
         G --> F
         G --> E
 
-    架构描述如下：
+    Architecture description:
     {architecture_text}
     """
     
@@ -105,14 +105,18 @@ async def generate_diagram(req: RequestBody):
 @app.post("/api/generate_mcq")
 async def generate_mcq(req: MCQRequest):
     base_prompt = (
-        f"应用类型: {req.appType}\n"
-        f"核心功能: {', '.join(req.features) or '无'}\n"
-        f"预期用户量: {req.userCount}\n"
-        f"用户输入标签: {chr(10).join(req.notes) or '无'}\n"
-        f"项目描述: {req.prompt}\n"
-        f"问题分类: {req.category}"
+        f"Application type: {req.appType}\n"
+        f"Core features: {', '.join(req.features) or 'None'}\n"
+        f"Expected user count: {req.userCount}\n"
+        f"User input notes: {chr(10).join(req.notes) or 'None'}\n"
+        f"Project description: {req.prompt}\n"
+        f"Question category: {req.category}"
     )
-    user_msg = "基于以上信息，生成一个四选一的选择题。请只给出问题和A、B、C、D四个答案。"
+    user_msg = (
+        "Based on the above information, ask a multiple-choice question that clarifies unspecified or missing project requirements."
+        "Focus on aspects that are underdescribed or might have been overlooked."
+        "Please provide only the question and four options A, B, C and D."
+    )
     response = gemini_model.generate_content(base_prompt + "\n" + user_msg)
     return {"mcq": response.text.strip()}
 

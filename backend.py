@@ -34,18 +34,21 @@ client = AsyncOpenAI(
 
 @app.post("/api/generate")
 async def generate(req: RequestBody):
-    # 将选择题结果拼进 prompt
+    # Build the prompt in English
     full_prompt = (
-        f"应用类型: {req.appType}\n"
-        f"核心功能: {', '.join(req.features) or '无'}\n"
-        f"预期用户量: {req.userCount}\n"
-        f"用户输入标签: {chr(10).join(req.notes) or '无'}\n"
-        f"项目描述: {req.prompt}"
+        f"Application type: {req.appType}\n"
+        f"Core features: {', '.join(req.features) or 'None'}\n"
+        f"Expected user count: {req.userCount}\n"
+        f"User input notes: {chr(10).join(req.notes) or 'None'}\n"
+        f"Project description: {req.prompt}"
     )
     response = await client.chat.completions.create(
         model="deepseek-chat",
         messages=[
-            {"role": "system",  "content": "你是一个帮助用户生成软件系统架构设计方案的助手。请用英文回答。"},
+            {
+                "role": "system",
+                "content": "You are an assistant that helps users design software system architectures. Answer in English.",
+            },
             {"role": "user",    "content": full_prompt}
         ]
     )
@@ -60,35 +63,35 @@ class DiagramRequest(BaseModel):
 
 @app.post('/generate_diagram')
 async def generate_diagram(req: RequestBody):
-    """
-    基于上一步的架构生成结果，自动生成对应的流程图
-    使用与 /api/generate 相同的输入参数，但返回Mermaid图表
-    """
-    # 使用与generate函数相同的逻辑生成架构描述
+    """Auto-generate a diagram based on the previously generated architecture."""
+    # Use the same logic as the generate function
     full_prompt = (
-        f"应用类型: {req.appType}\n"
-        f"核心功能: {', '.join(req.features) or '无'}\n"
-        f"预期用户量: {req.userCount}\n"
-        f"项目描述: {req.prompt}"
+        f"Application type: {req.appType}\n"
+        f"Core features: {', '.join(req.features) or 'None'}\n"
+        f"Expected user count: {req.userCount}\n"
+        f"Project description: {req.prompt}"
     )
     
     # 首先生成架构描述
     architecture_response = await client.chat.completions.create(
         model="deepseek-chat",
         messages=[
-            {"role": "system",  "content": "你是一个帮助用户生成软件系统架构设计方案的助手。请用英文回答。"},
+            {
+                "role": "system",
+                "content": "You are an assistant that helps users design software system architectures. Answer in English.",
+            },
             {"role": "user",    "content": full_prompt}
         ]
     )
     
     architecture_text = architecture_response.choices[0].message.content
     
-    # 然后将架构描述转换为Mermaid图表
+    # Then convert the architecture description to a Mermaid diagram
     diagram_prompt = f"""
-    你是一个软件架构专家，请将以下系统架构描述转化为 mermaid.js 的流程图（graph TD 格式），只返回代码块，请不要返回```mermaid以及```，不需要任何解释。
+You are a software architecture expert. Convert the following architecture description into a mermaid.js flowchart (graph TD format). Return only the code block without ```mermaid``` or ``` and provide no explanation.
 
-    架构描述如下：
-    {architecture_text}
+Architecture description:
+{architecture_text}
     """
     
     try:
@@ -125,21 +128,22 @@ async def generate_diagram(req: RequestBody):
 @app.post("/api/generate_mcq")
 async def generate_mcq(req: MCQRequest):
     prompt = (
-        f"应用类型: {req.appType}\n"
-        f"核心功能: {', '.join(req.features) or '无'}\n"
-        f"预期用户量: {req.userCount}\n"
-        f"用户输入标签: {chr(10).join(req.notes) or '无'}\n"
-        f"项目描述: {req.prompt}\n"
-        f"问题分类: {req.category}"
+        f"Application type: {req.appType}\n"
+        f"Core features: {', '.join(req.features) or 'None'}\n"
+        f"Expected user count: {req.userCount}\n"
+        f"User input notes: {chr(10).join(req.notes) or 'None'}\n"
+        f"Project description: {req.prompt}\n"
+        f"Question category: {req.category}"
     )
     user_msg = (
-        "基于以上信息，生成一个四选一的选择题。"
-        "请提供简短的问题以及A、B、C、D四个答案，不要附加任何额外内容。"
+        "Based on the above information, ask a multiple-choice question that clarifies unspecified or missing project requirements."
+        "Focus on aspects that are underdescribed or might have been overlooked."
+        "Provide a short question with exactly four options labeled A, B, C and D, and include no extra text."
     )
     response = await client.chat.completions.create(
         model="deepseek-chat",
         messages=[
-            {"role": "system", "content": "你是经验丰富的软件顾问，擅长提出关键问题。"},
+            {"role": "system", "content": "You are an experienced software consultant skilled at asking key questions."},
             {"role": "user", "content": prompt + "\n" + user_msg}
         ]
     )
@@ -176,4 +180,8 @@ async def note_hint(data: dict = Body(...)):
 
     return {"suggestion": response.choices[0].message.content.strip()}
 
-if __name__ == "__main__":    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)

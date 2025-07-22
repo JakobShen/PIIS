@@ -1196,13 +1196,23 @@ footer {
         box-shadow: none;
     }
 
-    .favorite-btn-in-footer i {
-        color: #fff;
-        font-size: 1.1rem;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+.favorite-btn-in-footer i {
+    color: #fff;
+    font-size: 1.1rem;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mcq-question {
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.mcq-options label {
+    display: block;
+    margin-bottom: 4px;
+}
